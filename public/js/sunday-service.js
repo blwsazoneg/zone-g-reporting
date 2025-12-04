@@ -131,13 +131,13 @@ document.addEventListener('alpine:init', () => {
                 this.eventModalInstance.hide();
                 this.loadInitialData();
                 alert("Event created!");
-            } catch (err) { alert("Failed to create event."); }
+            } catch (err) { alert(err.response?.data?.error || "Failed to create event."); }
         },
 
         async confirmDeleteEvent(event) {
             if (confirm(`Delete "${event.event_title}"? This deletes ALL reports in it.`)) {
                 try { await deleteEvent(event.id); this.loadInitialData(); }
-                catch (err) { alert("Failed to delete."); }
+                catch (err) { alert(err.response?.data?.error || "Failed to delete."); }
             }
         },
 
