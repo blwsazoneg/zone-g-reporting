@@ -2,6 +2,7 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
+import cors from 'cors';
 import { fileURLToPath } from 'url';
 
 // Import all the router files
@@ -39,6 +40,15 @@ const authLimiter = rateLimit({
 });
 
 // --- Middleware ---
+app.use(cors({
+    origin: [
+        'http://localhost:3000',                  // Allow your local development
+        'https://zone-g-reporting.vercel.app'     // Allow your live Vercel app
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // --- Serve Static Files ---

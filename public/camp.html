@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 
-<body x-cloak>
+<body>
 
     <!-- MOBILE OVERLAY -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -70,7 +70,7 @@
         </ul>
 
         <!-- === TAB 1: REPORTING & VIEWING === -->
-        <div x-show="activeTab !== 'events'" x-transition.opacity>
+        <div x-show="activeTab !== 'events'" x-transition.opacity x-cloak>
 
             <!-- 1. Select Camp -->
             <div class="card mb-4 border-0 shadow-sm bg-primary bg-opacity-10">

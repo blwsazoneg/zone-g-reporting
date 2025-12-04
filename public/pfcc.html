@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 
-<body x-cloak>
+<body>
 
     <!-- MOBILE OVERLAY -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -68,7 +68,7 @@
         </ul>
 
         <!-- TAB 1: SUBMIT FORM -->
-        <div x-show="activeTab === 'submit'" x-transition.opacity>
+        <div x-show="activeTab === 'submit'" x-transition.opacity x-cloak>
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                     <form @submit.prevent="submitForm">

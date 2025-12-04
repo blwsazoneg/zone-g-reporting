@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 
-<body x-cloak>
+<body>
 
     <!-- MOBILE OVERLAY -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -79,7 +79,7 @@
         <!-- === SUBMISSION FORMS (COLLAPSIBLE CARDS) === -->
 
         <!-- Monthly Form -->
-        <div x-show="activeTab === 'monthly'" class="card mb-4 border-0 shadow-sm bg-primary bg-opacity-10">
+        <div x-show="activeTab === 'monthly'" class="card mb-4 border-0 shadow-sm bg-primary bg-opacity-10" x-cloak>
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3" data-bs-toggle="collapse"
                     data-bs-target="#monthlyFormCollapse" style="cursor: pointer;">
