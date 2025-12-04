@@ -3,7 +3,7 @@ import { getToken } from './auth.js';
 
 // Create a pre-configured instance of axios
 const api = axios.create({
-    baseURL: 'http://localhost:3000/api', // All requests will be prefixed with this
+    baseURL: 'https://zone-g-reporting.vercel.app/api', // All requests will be prefixed with this
 });
 
 // This is an interceptor. It's a function that runs BEFORE every single request is sent.

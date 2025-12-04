@@ -4,8 +4,8 @@ import './kc-sdk-bundle.js';
 // KingsChat SDK is now available on the global 'kingsChatWebSdk' object
 const kcSdk = window.kingsChatWebSdk;
 
-const API_URL = 'http://localhost:3000/api'; // Our backend API
-const KC_CLIENT_ID = '0c8de1b4-7c1b-4840-b698-3070ddf1f59c'; // IMPORTANT: Replace with your actual Client ID
+const API_URL = 'https://zone-g-reporting.vercel.app/api'; // Our backend API
+const KC_CLIENT_ID = 'c2aafff1-d440-4900-9267-f3757d425451'; // IMPORTANT: Replace with your actual Client ID
 
 // CONFIGURATION
 
