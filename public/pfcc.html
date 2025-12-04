@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>PFCC Reports - Church Reporting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+    <!-- MOBILE OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header d-flex justify-content-between align-items-center gap-3">
+            <div id="currentUserAvatar">
+                <!-- JS will inject img here -->
+                <i class="bi bi-person-circle fs-2 text-secondary"></i>
+            </div>
+            <div class="overflow-hidden">
+                <!-- <h4 class="fw-bold text-white mb-0">BLW SA Zone G DSP</h4> -->
+                <small id="currentUserDisplay" class="text-white" style="font-size: 0.8rem;">Welcome</small>
+            </div>
+            <!-- Close button for mobile -->
+            <button class="btn btn-link text-white d-lg-none" id="sidebarClose"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/dashboard.html"><i class="bi bi-collection"></i> <span>Groups</span></a></li>
+            <li><a href="/chapters.html"><i class="bi bi-building"></i> <span>Chapters</span></a></li>
+            <li><a href="/users.html"><i class="bi bi-people"></i> <span>Users</span></a></li>
+            <li><a href="/sunday-service.html"><i class="bi bi-calendar-check"></i> <span>Sunday Service</span></a></li>
+            <li><a href="/camp.html"><i class="bi bi-compass"></i> <span>Camp</span></a></li>
+            <li><a href="/pfcc.html" class="active"><i class="bi bi-diagram-3"></i> <span>PFCC</span></a></li>
+            <li><a href="/finance.html"><i class="bi bi-cash-coin"></i> <span>Finance</span></a></li>
+            <li><a href="/materials.html"><i class="bi bi-book"></i> <span>Ministry Materials</span></a></li>
+            <li><a href="/hslhs.html"><i class="bi bi-heart-pulse"></i> <span>Healing Streams</span></a></li>
+            <li><a href="#" id="logoutBtn" class="text-danger"><i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span></a></li>
+        </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content" x-data="pfccComponent">
+
+        <!-- HEADER -->
+        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-dark d-lg-none me-3" id="sidebarOpen"><i class="bi bi-list"></i></button>
+                <h2 class="mb-0 fw-bold">PFCC Reporting</h2>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <ul class="nav nav-pills mb-4">
+            <li class="nav-item">
+                <a class="nav-link" :class="{ 'active': activeTab === 'submit' }" href="#"
+                    @click.prevent="activeTab = 'submit'"><i class="bi bi-plus-circle me-2"></i>Submit Weekly Report</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" :class="{ 'active': activeTab === 'view' }" href="#"
+                    @click.prevent="activeTab = 'view'"><i class="bi bi-clock-history me-2"></i>History</a>
+            </li>
+        </ul>
+
+        <!-- TAB 1: SUBMIT FORM -->
+        <div x-show="activeTab === 'submit'" x-transition.opacity>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form @submit.prevent="submitForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Cell Name</label>
+                                <input type="text" x-model="form.cell_name" class="form-control"
+                                    placeholder="e.g. Pioneers Cell" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Report Date</label>
+                                <input type="date" x-model="form.report_date" class="form-control" required>
+                            </div>
+
+                            <!-- Section 1 -->
+                            <div class="col-12 mt-4">
+                                <h6 class="text-primary border-bottom pb-2">Cell Meeting Stats</h6>
+                            </div>
+                            <div class="col-6 col-md-3"><label
+                                    class="form-label small text-muted">Attendance</label><input type="number"
+                                    x-model="form.cell_attendance" class="form-control" required></div>
+                            <div class="col-6 col-md-3"><label class="form-label small text-muted">First
+                                    Timers</label><input type="number" x-model="form.cell_first_timers"
+                                    class="form-control" required></div>
+                            <div class="col-6 col-md-3"><label class="form-label small text-muted">New
+                                    Converts</label><input type="number" x-model="form.new_converts"
+                                    class="form-control" required></div>
+                            <div class="col-6 col-md-3"><label class="form-label small text-muted">Offering
+                                    (R)</label><input type="number" step="0.01" x-model="form.offering"
+                                    class="form-control" required></div>
+
+                            <!-- Section 2 -->
+                            <div class="col-12 mt-4">
+                                <h6 class="text-primary border-bottom pb-2">Cell Members in Sunday Service</h6>
+                            </div>
+                            <div class="col-6 col-md-6"><label class="form-label small text-muted">Total Members
+                                    Present</label><input type="number" x-model="form.cell_church_attendance"
+                                    class="form-control" required></div>
+                            <div class="col-6 col-md-6"><label class="form-label small text-muted">First Timers
+                                    Present</label><input type="number" x-model="form.cell_church_first_timers"
+                                    class="form-control" required></div>
+
+                            <!-- Section 3 -->
+                            <div class="col-12 mt-4">
+                                <h6 class="text-primary border-bottom pb-2">Evangelism</h6>
+                            </div>
+                            <div class="col-4"><label class="form-label small text-muted">Reached</label><input
+                                    type="number" x-model="form.souls_reached" class="form-control" required></div>
+                            <div class="col-4"><label class="form-label small text-muted">Saved</label><input
+                                    type="number" x-model="form.souls_saved" class="form-control" required></div>
+                            <div class="col-4"><label class="form-label small text-muted">Retained</label><input
+                                    type="number" x-model="form.souls_retained" class="form-control" required></div>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-send me-2"></i>Submit
+                                Report</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: VIEW REPORTS -->
+        <div x-show="activeTab === 'view'" x-transition.opacity>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0"
+                            placeholder="Search by cell name or leader..." x-model="searchQuery">
+                    </div>
+                </div>
+                <div class="col-md-6 text-end d-none d-md-block">
+                    <small class="text-muted">Showing <span x-text="paginatedReports.length"></span> of <span
+                            x-text="filteredReports.length"></span></small>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <template x-for="rep in paginatedReports" :key="rep.id">
+                    <div class="col-xl-4 col-lg-6 col-12">
+                        <div class="data-card h-100 position-relative">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0" x-text="rep.cell_name"></h5>
+                                        <small class="text-muted"><i class="bi bi-calendar me-1"></i> <span
+                                                x-text="formatDate(rep.report_date)"></span></small>
+                                    </div>
+                                    <span class="badge bg-light text-dark border" x-text="rep.chapter_name"></span>
+                                </div>
+
+                                <!-- Key Stats Preview -->
+                                <div class="row g-2 mb-3 text-center">
+                                    <div class="col-4">
+                                        <div class="p-2 bg-light rounded">
+                                            <small class="d-block text-muted" style="font-size: 0.7rem;">ATTN</small>
+                                            <strong class="text-primary" x-text="rep.cell_attendance"></strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 bg-light rounded">
+                                            <small class="d-block text-muted"
+                                                style="font-size: 0.7rem;">OFFERING</small>
+                                            <strong class="text-success" x-text="formatCurrency(rep.offering)"></strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 bg-light rounded">
+                                            <small class="d-block text-muted" style="font-size: 0.7rem;">SOULS</small>
+                                            <strong class="text-dark" x-text="rep.souls_saved"></strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                    <button @click="viewDetails(rep)"
+                                        class="btn btn-sm btn-outline-primary w-100 me-2">View Full Details</button>
+                                    <button @click="confirmDelete(rep)" class="btn btn-sm btn-outline-danger"><i
+                                            class="bi bi-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="!loading && filteredReports.length === 0" class="col-12 text-center py-5 text-muted">No
+                    reports found.</div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center mt-4" x-show="filteredReports.length > pageSize">
+                <nav>
+                    <ul class="pagination pagination-sm">
+                        <li class="page-item" :class="{ 'disabled': currentPage === 1 }"><button class="page-link"
+                                @click="currentPage--">Previous</button></li>
+                        <li class="page-item disabled d-none d-sm-block"><span class="page-link"
+                                x-text="`Page ${currentPage} of ${totalPages}`"></span></li>
+                        <li class="page-item" :class="{ 'disabled': currentPage === totalPages }"><button
+                                class="page-link" @click="currentPage++">Next</button></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- FULL REPORT DETAILS MODAL -->
+        <div class="modal fade" id="detailsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content" x-show="selectedReport">
+                    <div class="modal-header bg-light">
+                        <div>
+                            <h5 class="modal-title fw-bold" x-text="selectedReport?.cell_name"></h5>
+                            <small class="text-muted" x-text="formatDate(selectedReport?.report_date)"></small>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="row g-4">
+                            <!-- Section 1 -->
+                            <div class="col-md-4">
+                                <h6 class="text-uppercase text-primary small fw-bold border-bottom pb-2">Cell Meeting
+                                </h6>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                        <span>Attendance</span><strong
+                                            x-text="selectedReport?.cell_attendance"></strong></li>
+                                    <li class="list-group-item d-flex justify-content-between px-0"><span>First
+                                            Timers</span><strong x-text="selectedReport?.cell_first_timers"></strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between px-0"><span>New
+                                            Converts</span><strong x-text="selectedReport?.new_converts"></strong></li>
+                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                        <span>Offering</span><strong class="text-success"
+                                            x-text="formatCurrency(selectedReport?.offering)"></strong></li>
+                                </ul>
+                            </div>
+                            <!-- Section 2 -->
+                            <div class="col-md-4">
+                                <h6 class="text-uppercase text-primary small fw-bold border-bottom pb-2">Sunday Service
+                                </h6>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between px-0"><span>Total
+                                            Members</span><strong
+                                            x-text="selectedReport?.cell_church_attendance"></strong></li>
+                                    <li class="list-group-item d-flex justify-content-between px-0"><span>First
+                                            Timers</span><strong
+                                            x-text="selectedReport?.cell_church_first_timers"></strong></li>
+                                </ul>
+                            </div>
+                            <!-- Section 3 -->
+                            <div class="col-md-4">
+                                <h6 class="text-uppercase text-primary small fw-bold border-bottom pb-2">Evangelism</h6>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between px-0"><span>Souls
+                                            Reached</span><strong x-text="selectedReport?.souls_reached"></strong></li>
+                                    <li class="list-group-item d-flex justify-content-between px-0"><span>Souls
+                                            Saved</span><strong x-text="selectedReport?.souls_saved"></strong></li>
+                                    <li class="list-group-item d-flex justify-content-between px-0"><span>Souls
+                                            Retained</span><strong x-text="selectedReport?.souls_retained"></strong>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-top text-muted small">
+                            Submitted by: <span x-text="selectedReport?.cell_leader_name"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MESSAGE MODAL -->
+        <div class="modal fade" id="messageModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" x-text="modal.title"></h5><button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p x-text="modal.body"></p>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-primary"
+                            data-bs-dismiss="modal">OK</button></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="/js/pfcc.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>HSLHS Reports - Church Reporting</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+        <!-- MOBILE OVERLAY -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+                <div class="sidebar-header d-flex justify-content-between align-items-center gap-3">
+                        <div id="currentUserAvatar">
+                                <!-- JS will inject img here -->
+                                <i class="bi bi-person-circle fs-2 text-secondary"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                                <!-- <h4 class="fw-bold text-white mb-0">BLW SA Zone G DSP</h4> -->
+                                <small id="currentUserDisplay" class="text-white"
+                                        style="font-size: 0.8rem;">Welcome</small>
+                        </div>
+                        <!-- Close button for mobile -->
+                        <button class="btn btn-link text-white d-lg-none" id="sidebarClose"><i
+                                        class="bi bi-x-lg"></i></button>
+                </div>
+                <ul class="sidebar-menu">
+                        <li><a href="/dashboard.html"><i class="bi bi-collection"></i> <span>Groups</span></a></li>
+                        <li><a href="/chapters.html"><i class="bi bi-building"></i> <span>Chapters</span></a></li>
+                        <li><a href="/users.html"><i class="bi bi-people"></i> <span>Users</span></a></li>
+                        <li><a href="/sunday-service.html"><i class="bi bi-calendar-check"></i> <span>Sunday
+                                                Service</span></a></li>
+                        <li><a href="/camp.html"><i class="bi bi-compass"></i> <span>Camp</span></a></li>
+                        <li><a href="/pfcc.html"><i class="bi bi-diagram-3"></i> <span>PFCC</span></a></li>
+                        <li><a href="/finance.html"><i class="bi bi-cash-coin"></i>
+                                        <span>Finance</span></a></li>
+                        <li><a href="/materials.html"><i class="bi bi-book"></i> <span>Ministry Materials</span></a>
+                        </li>
+                        <li><a href="/hslhs.html" class="active"><i class="bi bi-heart-pulse"></i> <span>Healing Streams</span></a>
+                        </li>
+                        <li><a href="#" id="logoutBtn" class="text-danger"><i class="bi bi-box-arrow-right"></i>
+                                        <span>Logout</span></a></li>
+                </ul>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content" x-data="hslhsComponent">
+
+                <!-- HEADER -->
+                <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                                <button class="btn btn-dark d-lg-none me-3" id="sidebarOpen"><i
+                                                class="bi bi-list"></i></button>
+                                <h2 class="mb-0 fw-bold">Healing Streams</h2>
+                        </div>
+                </div>
+
+                <!-- TABS -->
+                <ul class="nav nav-pills mb-4">
+                        <li class="nav-item">
+                                <a class="nav-link" :class="{ 'active': activeTab === 'submit' }" href="#"
+                                        @click.prevent="activeTab = 'submit'"><i
+                                                class="bi bi-plus-circle me-2"></i>Submit Report</a>
+                        </li>
+                        <li class="nav-item">
+                                <a class="nav-link" :class="{ 'active': activeTab === 'view' }" href="#"
+                                        @click.prevent="activeTab = 'view'"><i
+                                                class="bi bi-clock-history me-2"></i>History</a>
+                        </li>
+                </ul>
+
+                <!-- TAB 1: SUBMIT FORM -->
+                <div x-show="activeTab === 'submit'" x-transition.opacity>
+                        <div class="card border-0 shadow-sm bg-light">
+                                <div class="card-body p-4">
+                                        <form @submit.prevent="submitForm">
+
+                                                <!-- Header Details -->
+                                                <div class="row g-3 mb-4">
+                                                        <div class="col-md-6">
+                                                                <label class="fw-bold">Group</label>
+                                                                <select x-model="form.group_id"
+                                                                        class="form-select form-select-lg" required>
+                                                                        <option value="">Select Group</option>
+                                                                        <template x-for="g in groups" :key="g.id">
+                                                                                <option :value="g.id"
+                                                                                        x-text="g.group_name"></option>
+                                                                        </template>
+                                                                </select>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                                <label class="fw-bold">Program Title</label>
+                                                                <input type="text" x-model="form.program_title"
+                                                                        class="form-control form-control-lg"
+                                                                        placeholder="e.g. HSLHS March 2026" required>
+                                                        </div>
+                                                </div>
+
+                                                <!-- Accordion -->
+                                                <div class="accordion shadow-sm" id="hslhsAccordion">
+                                                        <!-- 1. PRAYER CLOUD -->
+                                                        <div class="accordion-item">
+                                                                <h2 class="accordion-header"><button
+                                                                                class="accordion-button" type="button"
+                                                                                data-bs-toggle="collapse"
+                                                                                data-bs-target="#collapsePrayer">1.
+                                                                                Prayer Cloud</button></h2>
+                                                                <div id="collapsePrayer"
+                                                                        class="accordion-collapse collapse show"
+                                                                        data-bs-parent="#hslhsAccordion">
+                                                                        <div class="accordion-body row g-3">
+                                                                                <div class="col-md-4">
+                                                                                        <label>Activated</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.prayer_clouds_activated"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Prayed</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.prayer_clouds_prayed"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Target</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.prayer_cloud_target"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4"><label>Total
+                                                                                                Clouds</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.total_prayer_clouds"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4"><label>Hours
+                                                                                                Prayed</label><input
+                                                                                                type="number"
+                                                                                                step="0.01"
+                                                                                                x-model="form.hours_prayed"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Outreaches</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.prayer_outreaches"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                        </div>
+                                                                </div>
+                                                        </div>
+                                                        <!-- 2. PUBLICITY -->
+                                                        <div class="accordion-item">
+                                                                <h2 class="accordion-header"><button
+                                                                                class="accordion-button collapsed"
+                                                                                type="button" data-bs-toggle="collapse"
+                                                                                data-bs-target="#collapsePublicity">2.
+                                                                                Publicity (All)</button></h2>
+                                                                <div id="collapsePublicity"
+                                                                        class="accordion-collapse collapse"
+                                                                        data-bs-parent="#hslhsAccordion">
+                                                                        <div class="accordion-body row g-3">
+                                                                                <h6 class="text-primary border-bottom">
+                                                                                        On Ground</h6>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Magazines</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.magazines_distributed"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Flyers</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.flyers_distributed"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>T-Shirts</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.tshirts_printed"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Outreaches</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.healing_outreaches"
+                                                                                                class="form-control">
+                                                                                </div>
+
+                                                                                <h6
+                                                                                        class="text-primary border-bottom mt-3">
+                                                                                        Online</h6>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Reached</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.online_souls_reached"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Won</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.online_souls_won"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Views</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.online_views"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Followers</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.online_followers"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Comments</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.online_comments"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Likes</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.online_likes"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Videos</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.online_videos_posted"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Flyers</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.online_flyers_posted"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Celebrities</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.celebrities_reached"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Dignitaries</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.dignitaries_reached"
+                                                                                                class="form-control">
+                                                                                </div>
+
+                                                                                <h6
+                                                                                        class="text-primary border-bottom mt-3">
+                                                                                        Feedback</h6>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Texts</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.feedback_texts_received"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Calls</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.feedback_calls_received"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4"><label>Reached
+                                                                                                Out</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.feedback_people_reached_out"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                        </div>
+                                                                </div>
+                                                        </div>
+                                                        <!-- 3. PENETRATION -->
+                                                        <div class="accordion-item">
+                                                                <h2 class="accordion-header"><button
+                                                                                class="accordion-button collapsed"
+                                                                                type="button" data-bs-toggle="collapse"
+                                                                                data-bs-target="#collapsePenetration">3.
+                                                                                Penetration</button></h2>
+                                                                <div id="collapsePenetration"
+                                                                        class="accordion-collapse collapse"
+                                                                        data-bs-parent="#hslhsAccordion">
+                                                                        <div class="accordion-body row g-3">
+                                                                                <h6 class="text-primary border-bottom">
+                                                                                        People Reached</h6>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Campus</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.pen_souls_reached_campus"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Res</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.pen_souls_reached_res"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Hospital</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.pen_souls_reached_hospital"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Families</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.pen_families_reached"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-12"><label>Souls
+                                                                                                Won</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.pen_souls_won"
+                                                                                                class="form-control">
+                                                                                </div>
+
+                                                                                <h6
+                                                                                        class="text-primary border-bottom mt-3">
+                                                                                        Places Reached (Counts)</h6>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Campuses</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.pen_campuses_reached"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Residences</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.pen_residences_reached"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Hospitals</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.pen_hospitals_reached"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-12"><label>Other Centers
+                                                                                                (List)</label><textarea
+                                                                                                x-model="form.pen_other_centers_visited_list"
+                                                                                                class="form-control"
+                                                                                                rows="2"></textarea>
+                                                                                </div>
+                                                                        </div>
+                                                                </div>
+                                                        </div>
+                                                        <!-- 4. REGISTRATION -->
+                                                        <div class="accordion-item">
+                                                                <h2 class="accordion-header"><button
+                                                                                class="accordion-button collapsed"
+                                                                                type="button" data-bs-toggle="collapse"
+                                                                                data-bs-target="#collapseReg">4.
+                                                                                Registration & Heralds</button></h2>
+                                                                <div id="collapseReg"
+                                                                        class="accordion-collapse collapse"
+                                                                        data-bs-parent="#hslhsAccordion">
+                                                                        <div class="accordion-body row g-3">
+                                                                                <div class="col-md-4">
+                                                                                        <label>Individuals</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.reg_individuals"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Families</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.reg_families"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Sick</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.reg_sick_disabled"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-6"><label>Physical
+                                                                                                Ctrs</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.reg_physical_centers"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-6"><label>Strategic
+                                                                                                Ctrs</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.reg_confirmed_strategic_centers"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <h6
+                                                                                        class="text-primary border-bottom mt-3">
+                                                                                        Heralds</h6>
+                                                                                <div class="col-md-4"><label>Total
+                                                                                                Heralds</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.herald_total"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Bulk</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.herald_bulk_registrations"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Amplify</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.herald_amplify_registrations"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-6">
+                                                                                        <label>Countries</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.herald_countries_amplified"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-6">
+                                                                                        <label>Zonal</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.herald_total_zonal_registrations"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                        </div>
+                                                                </div>
+                                                        </div>
+                                                        <!-- 5. PARTNERSHIP -->
+                                                        <div class="accordion-item">
+                                                                <h2 class="accordion-header"><button
+                                                                                class="accordion-button collapsed"
+                                                                                type="button" data-bs-toggle="collapse"
+                                                                                data-bs-target="#collapsePart">5.
+                                                                                Partnership</button></h2>
+                                                                <div id="collapsePart"
+                                                                        class="accordion-collapse collapse"
+                                                                        data-bs-parent="#hslhsAccordion">
+                                                                        <div class="accordion-body row g-3">
+                                                                                <div class="col-md-6"><label>Total
+                                                                                                Amount (R)</label><input
+                                                                                                type="number"
+                                                                                                step="0.01"
+                                                                                                x-model="form.partnership_total_amount"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-6"><label>New
+                                                                                                Partners</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.partnership_new_partners"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-6">
+                                                                                        <label>Helpers</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.partnership_helper_initiatives"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-6"><label>Total
+                                                                                                Count</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.partnership_total_partners"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                        </div>
+                                                                </div>
+                                                        </div>
+                                                        <!-- 6. ATTENDANCE -->
+                                                        <div class="accordion-item">
+                                                                <h2 class="accordion-header"><button
+                                                                                class="accordion-button collapsed"
+                                                                                type="button" data-bs-toggle="collapse"
+                                                                                data-bs-target="#collapseAtt">6.
+                                                                                Attendance</button></h2>
+                                                                <div id="collapseAtt"
+                                                                        class="accordion-collapse collapse"
+                                                                        data-bs-parent="#hslhsAccordion">
+                                                                        <div class="accordion-body row g-3">
+                                                                                <h6 class="text-primary border-bottom">
+                                                                                        Center Counts</h6>
+                                                                                <div class="col-md-2">
+                                                                                        <label>Phys</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_physical_centers_count"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-2">
+                                                                                        <label>Family</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_family_centers_count"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-2">
+                                                                                        <label>Virtual</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_virtual_centers_count"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-2">
+                                                                                        <label>Hosp.</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_hospital_centers_count"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                        <label>Countries</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_targeted_countries_count"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <h6
+                                                                                        class="text-primary border-bottom mt-3">
+                                                                                        Headcounts</h6>
+                                                                                <div class="col-md-3"><label>At
+                                                                                                Phys</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_total_physical_center"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3"><label>At
+                                                                                                Family</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_total_family_center"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3"><label>At
+                                                                                                Virtual</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_total_virtual_center"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3"><label>At
+                                                                                                Hosp.</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_total_hospital_center"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3"><label>At
+                                                                                                Other</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_total_other_center"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-3">
+                                                                                        <label>Indiv.</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_total_individual"
+                                                                                                class="form-control">
+                                                                                </div>
+                                                                                <div class="col-md-6"><label
+                                                                                                class="fw-bold">General
+                                                                                                Total</label><input
+                                                                                                type="number"
+                                                                                                x-model="form.att_general_total"
+                                                                                                class="form-control fw-bold bg-light">
+                                                                                </div>
+                                                                        </div>
+                                                                </div>
+                                                        </div>
+                                                </div>
+
+                                                <div class="mt-4">
+                                                        <button type="submit"
+                                                                class="btn btn-primary w-100 btn-lg shadow-sm">Submit
+                                                                Report</button>
+                                                </div>
+                                        </form>
+                                </div>
+                        </div>
+                </div>
+
+
+                <!-- TAB 2: VIEW REPORTS (Cards + Search) -->
+                <div x-show="activeTab === 'view'" x-transition.opacity>
+
+                        <!-- Search & Controls -->
+                        <div class="row mb-4">
+                                <div class="col-md-6">
+                                        <div class="input-group">
+                                                <span class="input-group-text bg-white border-end-0"><i
+                                                                class="bi bi-search"></i></span>
+                                                <input type="text" class="form-control border-start-0 ps-0"
+                                                        placeholder="Search title or group..." x-model="searchQuery">
+                                        </div>
+                                </div>
+                                <div class="col-md-6 text-end d-none d-md-block">
+                                        <small class="text-muted">Showing <span x-text="paginatedReports.length"></span>
+                                                of <span x-text="filteredReports.length"></span></small>
+                                </div>
+                        </div>
+
+                        <!-- CARD GRID -->
+                        <div class="row g-4">
+                                <template x-for="rep in paginatedReports" :key="rep.id">
+                                        <div class="col-12">
+                                                <div class="card shadow-sm border-primary border-opacity-25 h-100">
+
+                                                        <!-- Card Header -->
+                                                        <div
+                                                                class="card-header bg-light d-flex justify-content-between align-items-center">
+                                                                <div>
+                                                                        <h5 class="mb-0 text-primary fw-bold"
+                                                                                x-text="rep.program_title"></h5>
+                                                                        <span class="badge bg-secondary"
+                                                                                x-text="rep.group_name"></span>
+                                                                        <small class="text-muted ms-2"
+                                                                                x-text="formatDate(rep.created_at)"></small>
+                                                                </div>
+                                                                <button @click="deleteReport(rep.id)"
+                                                                        class="btn btn-outline-danger btn-sm"><i
+                                                                                class="bi bi-trash"></i></button>
+                                                        </div>
+
+                                                        <div class="card-body">
+                                                                <!-- Top Level Snapshot (The most important numbers) -->
+                                                                <div class="row g-3 text-center mb-2">
+                                                                        <div class="col-md-2 col-4 border-end">
+                                                                                <small class="d-block text-muted text-uppercase"
+                                                                                        style="font-size:0.7rem">Prayer
+                                                                                        Clouds</small>
+                                                                                <strong class="fs-5"
+                                                                                        x-text="rep.total_prayer_clouds"></strong>
+                                                                        </div>
+                                                                        <div class="col-md-2 col-4 border-end">
+                                                                                <small class="d-block text-muted text-uppercase"
+                                                                                        style="font-size:0.7rem">Online
+                                                                                        Reach</small>
+                                                                                <strong class="fs-5"
+                                                                                        x-text="rep.online_souls_reached"></strong>
+                                                                        </div>
+                                                                        <div class="col-md-2 col-4 border-end">
+                                                                                <small class="d-block text-muted text-uppercase"
+                                                                                        style="font-size:0.7rem">Registrations</small>
+                                                                                <strong class="fs-5"
+                                                                                        x-text="rep.reg_individuals"></strong>
+                                                                        </div>
+                                                                        <div class="col-md-2 col-4 border-end">
+                                                                                <small class="d-block text-muted text-uppercase"
+                                                                                        style="font-size:0.7rem">Total
+                                                                                        Attendance</small>
+                                                                                <strong class="fs-5 text-primary"
+                                                                                        x-text="rep.att_general_total"></strong>
+                                                                        </div>
+                                                                        <div class="col-md-2 col-4 border-end">
+                                                                                <small class="d-block text-muted text-uppercase"
+                                                                                        style="font-size:0.7rem">Souls
+                                                                                        Won</small>
+                                                                                <strong class="fs-5 text-success"
+                                                                                        x-text="rep.online_souls_won + rep.pen_souls_won + rep.att_total_new_converts"></strong>
+                                                                        </div>
+                                                                        <div class="col-md-2 col-4">
+                                                                                <small class="d-block text-muted text-uppercase"
+                                                                                        style="font-size:0.7rem">Partnership</small>
+                                                                                <strong class="fs-5 text-dark"
+                                                                                        x-text="formatCurrency(rep.partnership_total_amount)"></strong>
+                                                                        </div>
+                                                                </div>
+
+                                                                <!-- Collapsible FULL Details -->
+                                                                <div class="mt-2 text-center border-top pt-2">
+                                                                        <button class="btn btn-sm btn-link text-decoration-none fw-bold"
+                                                                                type="button" data-bs-toggle="collapse"
+                                                                                :data-bs-target="'#details'+rep.id">
+                                                                                View Full Report Breakdown <i
+                                                                                        class="bi bi-chevron-down"></i>
+                                                                        </button>
+                                                                </div>
+
+                                                                <div class="collapse mt-3" :id="'details'+rep.id">
+                                                                        <div class="card card-body bg-light border-0">
+
+                                                                                <!-- 1. PRAYER CLOUD -->
+                                                                                <h6
+                                                                                        class="text-primary border-bottom border-secondary pb-1 mb-2 fw-bold">
+                                                                                        1. Prayer Cloud</h6>
+                                                                                <div class="row g-2 mb-3">
+                                                                                        <div class="col-md-2 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Activated:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.prayer_clouds_activated"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-2 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Prayed:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.prayer_clouds_prayed"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-2 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Target:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.prayer_cloud_target"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-2 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Total:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.total_prayer_clouds"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-2 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Hours:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.hours_prayed"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-2 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Outreaches:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.prayer_outreaches"></strong>
+                                                                                        </div>
+                                                                                </div>
+
+                                                                                <!-- 2. PUBLICITY -->
+                                                                                <h6
+                                                                                        class="text-primary border-bottom border-secondary pb-1 mb-2 fw-bold">
+                                                                                        2. Publicity</h6>
+                                                                                <div class="row g-2 mb-3">
+                                                                                        <!-- On Ground -->
+                                                                                        <div class="col-12"><strong
+                                                                                                        class="small text-uppercase text-secondary">On
+                                                                                                        Ground</strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Mags:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.magazines_distributed"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Flyers:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.flyers_distributed"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">T-Shirts:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.tshirts_printed"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Outreaches:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.healing_outreaches"></strong>
+                                                                                        </div>
+
+                                                                                        <!-- Online -->
+                                                                                        <div class="col-12 mt-1"><strong
+                                                                                                        class="small text-uppercase text-secondary">Online</strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Reached:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.online_souls_reached"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Won:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.online_souls_won"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Views:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.online_views"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Followers:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.online_followers"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Comments:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.online_comments"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Likes:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.online_likes"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Videos:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.online_videos_posted"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Flyers:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.online_flyers_posted"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-6 col-12">
+                                                                                                <small
+                                                                                                        class="text-muted">Celebs/Dignitaries:</small>
+                                                                                                <strong
+                                                                                                        x-text="parseInt(rep.celebrities_reached) + parseInt(rep.dignitaries_reached)"></strong>
+                                                                                        </div>
+
+                                                                                        <!-- Feedback -->
+                                                                                        <div class="col-12 mt-1"><strong
+                                                                                                        class="small text-uppercase text-secondary">Feedback</strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-4 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Texts:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.feedback_texts_received"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-4 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Calls:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.feedback_calls_received"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-4 col-12">
+                                                                                                <small
+                                                                                                        class="text-muted">Reached
+                                                                                                        Out:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.feedback_people_reached_out"></strong>
+                                                                                        </div>
+                                                                                </div>
+
+                                                                                <!-- 3. PENETRATION -->
+                                                                                <h6
+                                                                                        class="text-primary border-bottom border-secondary pb-1 mb-2 fw-bold">
+                                                                                        3. Penetration</h6>
+                                                                                <div class="row g-2 mb-3">
+                                                                                        <div
+                                                                                                class="col-md-6 border-end">
+                                                                                                <strong
+                                                                                                        class="d-block small text-uppercase text-secondary">People
+                                                                                                        Reached</strong>
+                                                                                                <div class="row">
+                                                                                                        <div
+                                                                                                                class="col-6">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Campus:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.pen_souls_reached_campus"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-6">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Res:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.pen_souls_reached_res"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-6">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Hosp:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.pen_souls_reached_hospital"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-6">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Families:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.pen_families_reached"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-12">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Won:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.pen_souls_won"></strong>
+                                                                                                        </div>
+                                                                                                </div>
+                                                                                        </div>
+                                                                                        <div class="col-md-6">
+                                                                                                <strong
+                                                                                                        class="d-block small text-uppercase text-secondary">Places
+                                                                                                        Reached</strong>
+                                                                                                <div class="row">
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Campus:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.pen_campuses_reached"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Res:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.pen_residences_reached"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Hosp:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.pen_hospitals_reached"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-12 mt-1">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Other
+                                                                                                                        List:</small>
+                                                                                                                <span class="fst-italic"
+                                                                                                                        x-text="rep.pen_other_centers_visited_list || 'None'"></span>
+                                                                                                        </div>
+                                                                                                </div>
+                                                                                        </div>
+                                                                                </div>
+
+                                                                                <!-- 4. REGISTRATION & HERALDS -->
+                                                                                <h6
+                                                                                        class="text-primary border-bottom border-secondary pb-1 mb-2 fw-bold">
+                                                                                        4. Registration & Heralds</h6>
+                                                                                <div class="row g-2 mb-3">
+                                                                                        <div class="col-md-4 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Indiv:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.reg_individuals"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-4 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Families:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.reg_families"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-4 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Sick:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.reg_sick_disabled"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-6 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Phys
+                                                                                                        Ctrs:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.reg_physical_centers"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-6 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Strat
+                                                                                                        Ctrs:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.reg_confirmed_strategic_centers"></strong>
+                                                                                        </div>
+
+                                                                                        <div class="col-12 mt-1"><strong
+                                                                                                        class="small text-uppercase text-secondary">Heralds</strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Total:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.herald_total"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Bulk:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.herald_bulk_registrations"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Amplify:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.herald_amplify_registrations"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-3 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Countries:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.herald_countries_amplified"></strong>
+                                                                                        </div>
+                                                                                </div>
+
+                                                                                <!-- 5. PARTNERSHIP -->
+                                                                                <h6
+                                                                                        class="text-primary border-bottom border-secondary pb-1 mb-2 fw-bold">
+                                                                                        5. Partnership</h6>
+                                                                                <div class="row g-2 mb-3">
+                                                                                        <div class="col-md-4 col-12">
+                                                                                                <small
+                                                                                                        class="text-muted">Amount:</small>
+                                                                                                <strong class="text-success"
+                                                                                                        x-text="formatCurrency(rep.partnership_total_amount)"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-4 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">New
+                                                                                                        Partners:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.partnership_new_partners"></strong>
+                                                                                        </div>
+                                                                                        <div class="col-md-4 col-6">
+                                                                                                <small
+                                                                                                        class="text-muted">Total
+                                                                                                        Partners:</small>
+                                                                                                <strong
+                                                                                                        x-text="rep.partnership_total_partners"></strong>
+                                                                                        </div>
+                                                                                </div>
+
+                                                                                <!-- 6. ATTENDANCE -->
+                                                                                <h6
+                                                                                        class="text-primary border-bottom border-secondary pb-1 mb-2 fw-bold">
+                                                                                        6. Attendance Breakdown</h6>
+                                                                                <div class="row g-2">
+                                                                                        <div
+                                                                                                class="col-md-6 border-end">
+                                                                                                <strong
+                                                                                                        class="d-block small text-uppercase text-secondary">Center
+                                                                                                        Counts</strong>
+                                                                                                <div class="row">
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Phys:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_physical_centers_count"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Fam:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_family_centers_count"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Virt:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_virtual_centers_count"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Hosp:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_hospital_centers_count"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-8">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Target
+                                                                                                                        Countries:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_targeted_countries_count"></strong>
+                                                                                                        </div>
+                                                                                                </div>
+                                                                                        </div>
+                                                                                        <div class="col-md-6">
+                                                                                                <strong
+                                                                                                        class="d-block small text-uppercase text-secondary">Headcounts</strong>
+                                                                                                <div class="row">
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Phys:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_total_physical_center"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Fam:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_total_family_center"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Virt:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_total_virtual_center"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Hosp:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_total_hospital_center"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Indiv:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_total_individual"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-4">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Other:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_total_other_center"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-6 mt-1">
+                                                                                                                <small
+                                                                                                                        class="text-muted">1st
+                                                                                                                        Timers:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_total_first_timers"></strong>
+                                                                                                        </div>
+                                                                                                        <div
+                                                                                                                class="col-6 mt-1">
+                                                                                                                <small
+                                                                                                                        class="text-muted">Testimonies:</small>
+                                                                                                                <strong
+                                                                                                                        x-text="rep.att_testimonies"></strong>
+                                                                                                        </div>
+                                                                                                </div>
+                                                                                        </div>
+                                                                                </div>
+
+                                                                        </div>
+                                                                </div>
+                                                        </div>
+                                                </div>
+                                        </div>
+                                </template>
+                                <div x-show="!loading && filteredReports.length === 0"
+                                        class="col-12 text-center py-5 text-muted">No reports found matching your
+                                        search.</div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="d-flex justify-content-center mt-4" x-show="filteredReports.length > pageSize">
+                                <nav>
+                                        <ul class="pagination pagination-sm">
+                                                <li class="page-item" :class="{ 'disabled': currentPage === 1 }"><button
+                                                                class="page-link" @click="currentPage--">Prev</button>
+                                                </li>
+                                                <li class="page-item disabled d-none d-sm-block"><span class="page-link"
+                                                                x-text="`Page ${currentPage} of ${totalPages}`"></span>
+                                                </li>
+                                                <li class="page-item"
+                                                        :class="{ 'disabled': currentPage === totalPages }"><button
+                                                                class="page-link" @click="currentPage++">Next</button>
+                                                </li>
+                                        </ul>
+                                </nav>
+                        </div>
+                </div>
+
+
+
+                <!-- Status Modal -->
+                <div class="modal fade" id="statusModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                        <div class="modal-header">
+                                                <h5 class="modal-title" x-text="modal.title"></h5><button type="button"
+                                                        class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                                <p x-text="modal.body"></p>
+                                        </div>
+                                        <div class="modal-footer"><button type="button" class="btn btn-primary"
+                                                        data-bs-dismiss="modal">OK</button></div>
+                                </div>
+                        </div>
+                </div>
+
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script type="module" src="/js/hslhs.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,151 @@
+:root {
+    --sidebar-width: 260px;
+    --primary-color: #0d6efd;
+    --bg-light: #f8f9fa;
+}
+
+body {
+    background-color: var(--bg-light);
+    overflow-x: hidden;
+    /* Prevent horizontal scroll when sidebar slides */
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    /* Keeps it filling the screen vertically */
+    width: var(--sidebar-width);
+    background: #212529;
+    color: #fff;
+    transition: margin-left 0.3s ease-in-out;
+    z-index: 1050;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    /* Add breathing room at the bottom */
+    overflow-y: auto;
+    /* <--- KEY CHANGE: Enables vertical scrolling */
+}
+
+/* Custom Scrollbar Styling (Makes it look nice on Chrome/Edge/Safari) */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #212529;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #495057;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #6c757d;
+}
+
+/* Keep the rest of your sidebar styles below */
+.sidebar-header {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.sidebar-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 25px;
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    transition: 0.2s;
+    border-left: 4px solid transparent;
+}
+
+.sidebar-menu li a:hover,
+.sidebar-menu li a.active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--primary-color);
+}
+
+.sidebar-menu li a i {
+    font-size: 1.2rem;
+    margin-right: 15px;
+    width: 25px;
+    text-align: center;
+}
+
+/* --- MAIN CONTENT --- */
+.main-content {
+    margin-left: var(--sidebar-width);
+    /* Push content to right on desktop */
+    padding: 30px;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* --- OVERLAY (Backdrop for mobile) --- */
+.sidebar-overlay {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    /* Below sidebar, above content */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+.data-card {
+    background: #fff;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+    padding: 20px;
+}
+
+.data-card:hover {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+/* --- RESPONSIVE LOGIC --- */
+@media (max-width: 1023px) {
+
+    /* Hide Sidebar by moving it left */
+    .sidebar {
+        margin-left: calc(var(--sidebar-width) * -1);
+    }
+
+    /* Show Sidebar when active class is added via JS */
+    .sidebar.active {
+        margin-left: 0;
+    }
+
+    /* Content takes full width on mobile */
+    .main-content {
+        margin-left: 0;
+    }
+
+    /* Ensure cards stack nicely on very small screens */
+    .data-card {
+        margin-bottom: 15px;
+    }
+}

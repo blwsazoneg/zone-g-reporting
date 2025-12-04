@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camp Reports - Church Reporting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+    <!-- MOBILE OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header d-flex justify-content-between align-items-center gap-3">
+            <div id="currentUserAvatar">
+                <!-- JS will inject img here -->
+                <i class="bi bi-person-circle fs-2 text-secondary"></i>
+            </div>
+            <div class="overflow-hidden">
+                <!-- <h4 class="fw-bold text-white mb-0">BLW SA Zone G DSP</h4> -->
+                <small id="currentUserDisplay" class="text-white" style="font-size: 0.8rem;">Welcome</small>
+            </div>
+            <!-- Close button for mobile -->
+            <button class="btn btn-link text-white d-lg-none" id="sidebarClose"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/dashboard.html"><i class="bi bi-collection"></i> <span>Groups</span></a></li>
+            <li><a href="/chapters.html"><i class="bi bi-building"></i> <span>Chapters</span></a></li>
+            <li><a href="/users.html"><i class="bi bi-people"></i> <span>Users</span></a></li>
+            <li><a href="/sunday-service.html"><i class="bi bi-calendar-check"></i> <span>Sunday Service</span></a></li>
+            <li><a href="/camp.html" class="active"><i class="bi bi-compass"></i> <span>Camp</span></a></li>
+            <li><a href="/pfcc.html"><i class="bi bi-diagram-3"></i> <span>PFCC</span></a></li>
+            <li><a href="/finance.html"><i class="bi bi-cash-coin"></i> <span>Finance</span></a></li>
+            <li><a href="/materials.html"><i class="bi bi-book"></i> <span>Ministry Materials</span></a></li>
+            <li><a href="/hslhs.html"><i class="bi bi-heart-pulse"></i> <span>Healing Streams</span></a></li>
+            <li><a href="#" id="logoutBtn" class="text-danger"><i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span></a></li>
+        </ul>
+    </div>
+
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content" x-data="campComponent">
+
+        <!-- HEADER -->
+        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-dark d-lg-none me-3" id="sidebarOpen"><i class="bi bi-list"></i></button>
+                <h2 class="mb-0 fw-bold">Camp Reporting</h2>
+            </div>
+        </div>
+
+        <!-- MAIN NAVIGATION TABS -->
+        <ul class="nav nav-pills mb-4">
+            <li class="nav-item">
+                <a class="nav-link" :class="{ 'active': activeTab !== 'events' }" href="#"
+                    @click.prevent="activeTab = 'attendance'"><i class="bi bi-clipboard-data me-2"></i>Reporting</a>
+            </li>
+            <li class="nav-item" x-show="isAdmin">
+                <a class="nav-link" :class="{ 'active': activeTab === 'events' }" href="#"
+                    @click.prevent="activeTab = 'events'"><i class="bi bi-gear me-2"></i>Manage Camps (Admin)</a>
+            </li>
+        </ul>
+
+        <!-- === TAB 1: REPORTING & VIEWING === -->
+        <div x-show="activeTab !== 'events'" x-transition.opacity>
+
+            <!-- 1. Select Camp -->
+            <div class="card mb-4 border-0 shadow-sm bg-primary bg-opacity-10">
+                <div class="card-body">
+                    <label class="form-label fw-bold text-primary text-uppercase small">Select Active Camp</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-0"><i class="bi bi-tent"></i></span>
+                        <select class="form-select border-0 form-select-lg" x-model="selectedCampId"
+                            @change="loadCampData">
+                            <option value="">-- Choose a Camp --</option>
+                            <template x-for="event in events" :key="event.id">
+                                <option :value="event.id"
+                                    x-text="`${event.camp_title} (${formatDate(event.start_date)})`"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="selectedCampId">
+                <!-- SUB-TABS for Reporting -->
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link" :class="{ 'active': activeTab === 'attendance' }" href="#"
+                            @click.prevent="activeTab = 'attendance'">Daily Attendance</a>
+                    </li>
+                    <li class="nav-item" x-show="isGroupAdmin || isAdmin">
+                        <a class="nav-link" :class="{ 'active': activeTab === 'summary' }" href="#"
+                            @click.prevent="activeTab = 'summary'">Group Summary</a>
+                    </li>
+                    <li class="nav-item" x-show="isGroupAdmin || isAdmin">
+                        <a class="nav-link" :class="{ 'active': activeTab === 'upload' }" href="#"
+                            @click.prevent="activeTab = 'upload'">Upload Attendees</a>
+                    </li>
+                    <li class="nav-item" x-show="isAdmin">
+                        <a class="nav-link" :class="{ 'active': activeTab === 'view' }" href="#"
+                            @click.prevent="activeTab = 'view'">Full Report View</a>
+                    </li>
+                </ul>
+
+                <!-- SUB-TAB CONTENT -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+
+                        <!-- 1. ATTENDANCE FORM -->
+                        <div x-show="activeTab === 'attendance'">
+                            <h5 class="card-title mb-4">Submit Daily Attendance</h5>
+                            <form @submit.prevent="submitAttendanceForm">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Chapter</label>
+                                        <select x-model="attForm.chapter_id" class="form-select" required>
+                                            <option value="">Select Chapter</option>
+                                            <template x-for="ch in userChapters" :key="ch.id">
+                                                <option :value="ch.id" x-text="ch.chapter_name"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4"><label class="form-label">Date</label><input type="date"
+                                            x-model="attForm.report_date" class="form-control" required></div>
+                                    <div class="col-md-4"><label class="form-label">Count</label><input type="number"
+                                            x-model="attForm.attendance_count" class="form-control" required></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-4"><i
+                                        class="bi bi-check-lg me-2"></i>Submit</button>
+                            </form>
+                        </div>
+
+                        <!-- 2. SUMMARY FORM -->
+                        <div x-show="activeTab === 'summary'">
+                            <h5 class="card-title mb-4">Submit Group Summary</h5>
+                            <form @submit.prevent="submitSummaryForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Group</label>
+                                    <select x-model="sumForm.group_id" class="form-select" required>
+                                        <option value="">Select Group</option>
+                                        <template x-for="g in userGroups" :key="g.id">
+                                            <option :value="g.id" x-text="g.group_name"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-6 col-md-4"><label>Pastors</label><input type="number"
+                                            x-model="sumForm.total_pastors" class="form-control"></div>
+                                    <div class="col-6 col-md-4"><label>Coordinators</label><input type="number"
+                                            x-model="sumForm.total_coordinators" class="form-control"></div>
+                                    <div class="col-6 col-md-4"><label>Leaders</label><input type="number"
+                                            x-model="sumForm.total_leaders" class="form-control"></div>
+                                    <div class="col-6 col-md-4"><label>Members</label><input type="number"
+                                            x-model="sumForm.total_members" class="form-control"></div>
+                                    <div class="col-6 col-md-4"><label>1st Timers</label><input type="number"
+                                            x-model="sumForm.total_first_timers" class="form-control"></div>
+                                    <div class="col-6 col-md-4"><label>Baptised</label><input type="number"
+                                            x-model="sumForm.total_baptised" class="form-control"></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-4"><i
+                                        class="bi bi-check-lg me-2"></i>Submit Summary</button>
+                            </form>
+                        </div>
+
+                        <!-- 3. UPLOAD FORM -->
+                        <div x-show="activeTab === 'upload'">
+                            <h5 class="card-title mb-4">Upload Attendee List</h5>
+                            <form @submit.prevent="submitUpload">
+                                <div class="mb-3">
+                                    <label class="form-label">Group</label>
+                                    <select x-model="uploadForm.group_id" class="form-select" required>
+                                        <option value="">Select Group</option>
+                                        <template x-for="g in userGroups" :key="g.id">
+                                            <option :value="g.id" x-text="g.group_name"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">CSV File</label>
+                                    <input type="file" x-ref="attendeeFile" class="form-control" accept=".csv" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i
+                                        class="bi bi-cloud-upload me-2"></i>Upload</button>
+                            </form>
+                            <div class="alert alert-light border mt-4">
+                                <small class="text-muted"><i class="bi bi-info-circle me-1"></i>
+                                    <strong>Format:</strong> Title, Full Name, Group, Chapter, Got the t-shirt
+                                    (Yes/No)</small>
+                            </div>
+                        </div>
+
+                        <!-- 4. FULL REPORT VIEW (Admin) -->
+                        <div x-show="activeTab === 'view'">
+                            <h6 class="text-uppercase text-secondary fw-bold mb-3">Daily Attendance</h6>
+                            <div class="table-responsive mb-4">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Group</th>
+                                            <th>Chapter</th>
+                                            <th>Attn.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="rec in reportData.daily_attendance" :key="rec.id">
+                                            <tr>
+                                                <td x-text="formatDate(rec.report_date)"></td>
+                                                <td x-text="rec.group_name"></td>
+                                                <td x-text="rec.chapter_name"></td>
+                                                <td x-text="rec.attendance_count" class="fw-bold"></td>
+                                            </tr>
+                                        </template>
+                                        <tr x-show="reportData.daily_attendance.length === 0">
+                                            <td colspan="4" class="text-center text-muted">No data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <h6 class="text-uppercase text-secondary fw-bold mb-3">Group Summaries</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Group</th>
+                                            <th>Members</th>
+                                            <th>1st Timers</th>
+                                            <th>Baptised</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="sum in reportData.group_summaries" :key="sum.id">
+                                            <tr>
+                                                <td x-text="sum.group_name"></td>
+                                                <td x-text="sum.total_members"></td>
+                                                <td x-text="sum.total_first_timers"></td>
+                                                <td x-text="sum.total_baptised"></td>
+                                            </tr>
+                                        </template>
+                                        <tr x-show="reportData.group_summaries.length === 0">
+                                            <td colspan="4" class="text-center text-muted">No data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === TAB 2: MANAGE CAMPS (Admin) === -->
+        <div x-show="activeTab === 'events'" x-transition.opacity>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" placeholder="Search camps..."
+                            x-model="searchQuery">
+                    </div>
+                </div>
+                <div class="col-md-6 text-end mt-3 mt-md-0">
+                    <button class="btn btn-primary" @click="openEventModal"><i class="bi bi-plus-lg me-2"></i>New
+                        Camp</button>
+                </div>
+            </div>
+
+            <!-- GRID VIEW -->
+            <div class="row g-3">
+                <template x-for="event in paginatedEvents" :key="event.id">
+                    <div class="col-md-6 col-xl-4">
+                        <div class="data-card h-100">
+                            <div class="card-body d-flex flex-column justify-content-between">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-success bg-opacity-10 p-3 rounded me-3 text-success"><i
+                                            class="bi bi-tent fs-3"></i></div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1" x-text="event.camp_title"></h6>
+                                        <span class="text-muted small">
+                                            <i class="bi bi-calendar me-1"></i> <span
+                                                x-text="formatDate(event.start_date)"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-end border-top pt-3">
+                                    <button @click="confirmDeleteEvent(event)" class="btn btn-sm btn-outline-danger"><i
+                                            class="bi bi-trash me-1"></i> Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- PAGINATION -->
+            <div class="d-flex justify-content-center mt-4" x-show="filteredEvents.length > pageSize">
+                <nav>
+                    <ul class="pagination pagination-sm">
+                        <li class="page-item" :class="{ 'disabled': currentPage === 1 }"><button class="page-link"
+                                @click="currentPage--">Previous</button></li>
+                        <li class="page-item disabled"><span class="page-link"
+                                x-text="`Page ${currentPage} of ${totalPages}`"></span></li>
+                        <li class="page-item" :class="{ 'disabled': currentPage === totalPages }"><button
+                                class="page-link" @click="currentPage++">Next</button></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- CREATE MODAL -->
+        <div class="modal fade" id="createEventModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Create Camp</h5><button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                    </div>
+                    <form @submit.prevent="saveEvent">
+                        <div class="modal-body">
+                            <div class="mb-3"><label class="form-label">Camp Title</label><input type="text"
+                                    x-model="newEvent.camp_title" class="form-control" required></div>
+                            <div class="row">
+                                <div class="col-6 mb-3"><label class="form-label">Start</label><input type="date"
+                                        x-model="newEvent.start_date" class="form-control" required></div>
+                                <div class="col-6 mb-3"><label class="form-label">End</label><input type="date"
+                                        x-model="newEvent.end_date" class="form-control" required></div>
+                            </div>
+                        </div>
+                        <div class="modal-footer"><button type="submit" class="btn btn-primary">Create</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="/js/camp.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+</body>
+
+</html>

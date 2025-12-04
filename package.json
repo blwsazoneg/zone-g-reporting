@@ -1,0 +1,46 @@
+{
+  "name": "",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "license": "AGPL-version-3.0",
+  "private": false,
+  "engines": {
+    "node": ">= 14.0.0",
+    "npm": ">= 6.0.0"
+  },
+  "homepage": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": "",
+  "keywords": [],
+  "author": {
+    "name": "",
+    "email": "",
+    "url": ""
+  },
+  "contributors": [],
+  "scripts": {
+    "dev": "node index.js",
+    "test": "nodemon index.js",
+    "bundle-kc": "browserify node_modules/kingschat-web-sdk/dist/index.js -s kingsChatWebSdk > public/js/kc-sdk-bundle.js"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "nodemon": "^3.1.11",
+    "papaparse": "^5.5.3",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "browserify": "^17.0.1",
+    "kingschat-web-sdk": "^0.1.0"
+  }
+}

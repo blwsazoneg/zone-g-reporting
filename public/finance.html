@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Reports - Church Reporting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+    <!-- MOBILE OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header d-flex justify-content-between align-items-center gap-3">
+            <div id="currentUserAvatar">
+                <!-- JS will inject img here -->
+                <i class="bi bi-person-circle fs-2 text-secondary"></i>
+            </div>
+            <div class="overflow-hidden">
+                <!-- <h4 class="fw-bold text-white mb-0">BLW SA Zone G DSP</h4> -->
+                <small id="currentUserDisplay" class="text-white" style="font-size: 0.8rem;">Welcome</small>
+            </div>
+            <!-- Close button for mobile -->
+            <button class="btn btn-link text-white d-lg-none" id="sidebarClose"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/dashboard.html"><i class="bi bi-collection"></i> <span>Groups</span></a></li>
+            <li><a href="/chapters.html"><i class="bi bi-building"></i> <span>Chapters</span></a></li>
+            <li><a href="/users.html"><i class="bi bi-people"></i> <span>Users</span></a></li>
+            <li><a href="/sunday-service.html"><i class="bi bi-calendar-check"></i> <span>Sunday Service</span></a></li>
+            <li><a href="/camp.html"><i class="bi bi-compass"></i> <span>Camp</span></a></li>
+            <li><a href="/pfcc.html"><i class="bi bi-diagram-3"></i> <span>PFCC</span></a></li>
+            <li><a href="/finance.html" class="active"><i class="bi bi-cash-coin"></i> <span>Finance</span></a></li>
+            <li><a href="/materials.html"><i class="bi bi-book"></i> <span>Ministry Materials</span></a></li>
+            <li><a href="/hslhs.html"><i class="bi bi-heart-pulse"></i> <span>Healing Streams</span></a></li>
+            <li><a href="#" id="logoutBtn" class="text-danger"><i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span></a></li>
+        </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content" x-data="financeComponent">
+
+        <!-- HEADER -->
+        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-dark d-lg-none me-3" id="sidebarOpen"><i class="bi bi-list"></i></button>
+                <h2 class="mb-0 fw-bold">Finance Reporting</h2>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <ul class="nav nav-pills mb-4 gap-2">
+            <li class="nav-item" x-show="canViewGeneral">
+                <a class="nav-link" :class="{ 'active': activeTab === 'monthly' }" href="#"
+                    @click.prevent="switchTab('monthly')"><i class="bi bi-calendar-month me-2"></i>Monthly</a>
+            </li>
+            <li class="nav-item" x-show="canViewGeneral">
+                <a class="nav-link" :class="{ 'active': activeTab === 'pastor' }" href="#"
+                    @click.prevent="switchTab('pastor')"><i class="bi bi-person-badge me-2"></i>Pastors</a>
+            </li>
+            <li class="nav-item" x-show="canViewGeneral">
+                <a class="nav-link" :class="{ 'active': activeTab === 'upload' }" href="#"
+                    @click.prevent="switchTab('upload')"><i class="bi bi-cloud-upload me-2"></i>Uploads</a>
+            </li>
+            <li class="nav-item" x-show="isZonalFinance">
+                <a class="nav-link" :class="{ 'active': activeTab === 'remittance' }" href="#"
+                    @click.prevent="switchTab('remittance')"><i class="bi bi-bank me-2"></i>Remittance</a>
+            </li>
+        </ul>
+
+        <!-- === SUBMISSION FORMS (COLLAPSIBLE CARDS) === -->
+
+        <!-- Monthly Form -->
+        <div x-show="activeTab === 'monthly'" class="card mb-4 border-0 shadow-sm bg-primary bg-opacity-10">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3" data-bs-toggle="collapse"
+                    data-bs-target="#monthlyFormCollapse" style="cursor: pointer;">
+                    <h6 class="fw-bold text-primary mb-0"><i class="bi bi-plus-circle me-2"></i>Submit New Monthly
+                        Report</h6>
+                    <i class="bi bi-chevron-down text-primary"></i>
+                </div>
+                <div class="collapse" id="monthlyFormCollapse">
+                    <form @submit.prevent="submitMonthlyForm" class="bg-white p-3 rounded">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label>Group</label><select x-model="monthlyForm.group_id"
+                                    class="form-select" required>
+                                    <option value="">Select Group</option><template x-for="g in groups" :key="g.id">
+                                        <option :value="g.id" x-text="g.group_name"></option>
+                                    </template>
+                                </select></div>
+                            <div class="col-md-6"><label>Month</label><input type="date"
+                                    x-model="monthlyForm.report_month" class="form-control" required></div>
+                            <!-- Income -->
+                            <div class="col-md-3"><label class="small text-muted">Gen. Offerings</label><input
+                                    type="number" step="0.01" x-model="monthlyForm.general_offerings"
+                                    class="form-control"></div>
+                            <div class="col-md-3"><label class="small text-muted">Tithes</label><input type="number"
+                                    step="0.01" x-model="monthlyForm.tithes" class="form-control"></div>
+                            <div class="col-md-3"><label class="small text-muted">Seeds</label><input type="number"
+                                    step="0.01" x-model="monthlyForm.seed_offerings" class="form-control"></div>
+                            <div class="col-md-3"><label class="small text-muted">Alter Seeds</label><input
+                                    type="number" step="0.01" x-model="monthlyForm.alter_seeds" class="form-control">
+                            </div>
+                            <div class="col-md-3"><label class="small text-muted">1st Fruits</label><input type="number"
+                                    step="0.01" x-model="monthlyForm.first_fruits" class="form-control"></div>
+                            <div class="col-md-3"><label class="small text-muted">Thanksgiving</label><input
+                                    type="number" step="0.01" x-model="monthlyForm.thanksgiving" class="form-control">
+                            </div>
+                            <div class="col-md-3"><label class="small text-muted">Communion</label><input type="number"
+                                    step="0.01" x-model="monthlyForm.communion_offering" class="form-control"></div>
+                            <!-- Stats -->
+                            <div class="col-md-3"><label class="small text-muted">Total Tithers</label><input
+                                    type="number" x-model="monthlyForm.number_of_tithers" class="form-control"></div>
+                            <div class="col-md-3"><label class="small text-muted">New Tithers</label><input
+                                    type="number" x-model="monthlyForm.number_of_new_tithers" class="form-control">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3 w-100">Submit Report</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pastor Form -->
+        <div x-show="activeTab === 'pastor'" class="card mb-4 border-0 shadow-sm bg-primary bg-opacity-10">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3" data-bs-toggle="collapse"
+                    data-bs-target="#pastorFormCollapse" style="cursor: pointer;">
+                    <h6 class="fw-bold text-primary mb-0"><i class="bi bi-plus-circle me-2"></i>Update Pastor Record
+                    </h6>
+                    <i class="bi bi-chevron-down text-primary"></i>
+                </div>
+                <div class="collapse" id="pastorFormCollapse">
+                    <form @submit.prevent="submitPastorForm" class="bg-white p-3 rounded">
+                        <div class="row g-3">
+                            <div class="col-md-4"><label>Group</label><select x-model="pastorForm.group_id"
+                                    class="form-select" required>
+                                    <option value="">Select Group</option><template x-for="g in groups" :key="g.id">
+                                        <option :value="g.id" x-text="g.group_name"></option>
+                                    </template>
+                                </select></div>
+                            <div class="col-md-4"><label>Pastor</label><select x-model="pastorForm.pastor_user_id"
+                                    class="form-select" required>
+                                    <option value="">Select Pastor</option><template x-for="u in users" :key="u.id">
+                                        <option :value="u.id" x-text="u.full_name"></option>
+                                    </template>
+                                </select></div>
+                            <div class="col-md-4"><label>Year</label><input type="number"
+                                    x-model="pastorForm.record_year" class="form-control" required></div>
+                            <div class="col-md-3"><label class="small text-muted">1st Fruits</label><input type="number"
+                                    step="0.01" x-model="pastorForm.first_fruits" class="form-control"></div>
+                            <template x-for="month in months" :key="month.key">
+                                <div class="col-md-2"><label class="small text-muted"
+                                        x-text="month.label"></label><input type="number" step="0.01"
+                                        x-model="pastorForm[month.key]" class="form-control"></div>
+                            </template>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3 w-100">Save Record</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remittance Form -->
+        <div x-show="activeTab === 'remittance'" class="card mb-4 border-0 shadow-sm bg-primary bg-opacity-10">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3" data-bs-toggle="collapse"
+                    data-bs-target="#remitFormCollapse" style="cursor: pointer;">
+                    <h6 class="fw-bold text-primary mb-0"><i class="bi bi-plus-circle me-2"></i>Update Zonal Remittance
+                    </h6>
+                    <i class="bi bi-chevron-down text-primary"></i>
+                </div>
+                <div class="collapse" id="remitFormCollapse">
+                    <form @submit.prevent="submitRemittanceForm" class="bg-white p-3 rounded">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label>Item</label>
+                                <select x-model="remittanceForm.item_name" class="form-select" required>
+                                    <option value="">Select Item</option>
+                                    <option value="First Fruits">First Fruits</option>
+                                    <option value="Thanksgiving">Thanksgiving</option>
+                                    <option value="Zonal Dues">Zonal Dues</option>
+                                    <option value="Communion Service Offerings">Communion Service Offerings</option>
+                                    <option value="Global Service">Global Service</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6"><label>Year</label><input type="number"
+                                    x-model="remittanceForm.record_year" class="form-control" required></div>
+                            <template x-for="month in months" :key="month.key">
+                                <div class="col-md-2"><label class="small text-muted"
+                                        x-text="month.label"></label><input type="number" step="0.01"
+                                        x-model="remittanceForm[month.remittanceKey]" class="form-control"></div>
+                            </template>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3 w-100">Save Remittance</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div x-show="activeTab === 'upload'" class="card mb-4 border-0 shadow-sm bg-light">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">Load/Upload Records</h6>
+                <form @submit.prevent="submitUpload">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label">Group</label>
+                            <select x-model="uploadForm.group_id" class="form-select" @change="loadIndividualRecords"
+                                required>
+                                <option value="">Select Group</option>
+                                <template x-for="g in groups" :key="g.id">
+                                    <option :value="g.id" x-text="g.group_name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div class="col-md-2"><label class="form-label">Year</label><input type="number"
+                                x-model="uploadForm.record_year" class="form-control" @change="loadIndividualRecords"
+                                required></div>
+                        <div class="col-md-4"><label class="form-label">Upload New CSV</label><input type="file"
+                                x-ref="recordsFile" class="form-control" accept=".csv"></div>
+                        <div class="col-md-2"><button type="submit" class="btn btn-primary w-100"><i
+                                    class="bi bi-cloud-arrow-up"></i> Upload</button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- === LIST VIEWS (CARD GRIDS) === -->
+
+        <!-- Controls -->
+        <div class="row mb-4" x-show="activeTab !== 'upload'">
+            <div class="col-md-6"><input type="text" class="form-control" placeholder="Search..." x-model="searchQuery">
+            </div>
+            <div class="col-md-6 text-end"><small class="text-muted">Showing <span x-text="paginatedList.length"></span>
+                    of <span x-text="filteredList.length"></span></small></div>
+        </div>
+
+        <!-- 1. MONTHLY GRID -->
+        <div x-show="activeTab === 'monthly'" class="row g-3">
+            <template x-for="rep in paginatedList" :key="rep.id">
+                <div class="col-xl-4 col-md-6">
+                    <div class="data-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-0" x-text="formatDate(rep.report_month)"></h5>
+                                    <span class="badge bg-light text-dark border" x-text="rep.group_name"></span>
+                                </div>
+                                <button @click="viewDetails(rep)"
+                                    class="btn btn-outline-primary btn-sm h-50">Details</button>
+                            </div>
+                            <div class="row g-2 text-center">
+                                <div class="col-6">
+                                    <div class="p-2 bg-light rounded"><small
+                                            class="d-block text-muted">OFFERING</small><strong class="text-success"
+                                            x-text="formatCurrency(rep.general_offerings)"></strong></div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-2 bg-light rounded"><small
+                                            class="d-block text-muted">TITHES</small><strong class="text-success"
+                                            x-text="formatCurrency(rep.tithes)"></strong></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- 2. PASTOR GRID -->
+        <div x-show="activeTab === 'pastor'" class="row g-3">
+            <template x-for="rec in paginatedList" :key="rec.id">
+                <div class="col-xl-4 col-md-6">
+                    <div class="data-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-0" x-text="rec.pastor_name"></h5>
+                                    <small class="text-muted"><i class="bi bi-calendar me-1"></i> <span
+                                            x-text="rec.record_year"></span></small>
+                                </div>
+                                <button @click="viewDetails(rec)"
+                                    class="btn btn-outline-primary btn-sm h-50">Breakdown</button>
+                            </div>
+                            <div class="p-2 bg-light rounded text-center">
+                                <small class="d-block text-muted text-uppercase">1st Fruits</small>
+                                <strong class="text-primary fs-5" x-text="formatCurrency(rec.first_fruits)"></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- 3. REMITTANCE GRID -->
+        <div x-show="activeTab === 'remittance'" class="row g-3">
+            <template x-for="rec in paginatedList" :key="rec.id">
+                <div class="col-xl-4 col-md-6">
+                    <div class="data-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-0" x-text="rec.item_name"></h5>
+                                    <span class="badge bg-secondary" x-text="rec.record_year"></span>
+                                </div>
+                                <button @click="viewDetails(rec)"
+                                    class="btn btn-outline-primary btn-sm">Breakdown</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- 4. INDIVIDUAL LIST (Special Layout) -->
+        <div x-show="activeTab === 'upload'">
+            <div x-show="individualRecords.length > 0" class="table-responsive bg-white rounded shadow-sm">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>1st Fruits</th>
+                            <th>Jan</th>
+                            <th>Feb</th>
+                            <th>Mar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="rec in paginatedList" :key="rec.id">
+                            <tr>
+                                <td x-text="rec.full_name" class="fw-bold"></td>
+                                <td x-text="rec.leadership_role"></td>
+                                <td><span class="badge" :class="rec.is_new_tither ? 'bg-success' : 'bg-secondary'"
+                                        x-text="rec.is_new_tither ? 'New' : 'Member'"></span></td>
+                                <td x-text="formatCurrency(rec.first_fruits)"></td>
+                                <td x-text="formatCurrency(rec.jan_tithe)"></td>
+                                <td x-text="formatCurrency(rec.feb_tithe)"></td>
+                                <td x-text="formatCurrency(rec.mar_tithe)"></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+            <div x-show="!loading && individualRecords.length === 0" class="text-center py-5 text-muted">Select a Group
+                and Year above to view records.</div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-center mt-4" x-show="filteredList.length > pageSize">
+            <nav>
+                <ul class="pagination pagination-sm">
+                    <li class="page-item" :class="{ 'disabled': currentPage === 1 }"><button class="page-link"
+                            @click="currentPage--">Previous</button></li>
+                    <li class="page-item disabled d-none d-sm-block"><span class="page-link"
+                            x-text="`Page ${currentPage} of ${totalPages}`"></span></li>
+                    <li class="page-item" :class="{ 'disabled': currentPage === totalPages }"><button class="page-link"
+                            @click="currentPage++">Next</button></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- DETAILS MODAL -->
+        <div class="modal fade" id="detailsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content" x-show="selectedItem">
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title">Full Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+
+                        <!-- Dynamic Content based on Active Tab -->
+
+                        <!-- Monthly Details -->
+                        <div x-show="activeTab === 'monthly'" class="row g-3">
+                            <div class="col-6"><small class="text-muted">Offerings</small>
+                                <div class="fw-bold" x-text="formatCurrency(selectedItem?.general_offerings)"></div>
+                            </div>
+                            <div class="col-6"><small class="text-muted">Tithes</small>
+                                <div class="fw-bold" x-text="formatCurrency(selectedItem?.tithes)"></div>
+                            </div>
+                            <div class="col-6"><small class="text-muted">Seeds</small>
+                                <div class="fw-bold" x-text="formatCurrency(selectedItem?.seed_offerings)"></div>
+                            </div>
+                            <div class="col-6"><small class="text-muted">Alter Seeds</small>
+                                <div class="fw-bold" x-text="formatCurrency(selectedItem?.alter_seeds)"></div>
+                            </div>
+                            <div class="col-6"><small class="text-muted">1st Fruits</small>
+                                <div class="fw-bold" x-text="formatCurrency(selectedItem?.first_fruits)"></div>
+                            </div>
+                            <div class="col-6"><small class="text-muted">Thanksgiving</small>
+                                <div class="fw-bold" x-text="formatCurrency(selectedItem?.thanksgiving)"></div>
+                            </div>
+                            <div class="col-6"><small class="text-muted">Communion</small>
+                                <div class="fw-bold" x-text="formatCurrency(selectedItem?.communion_offering)"></div>
+                            </div>
+                            <div class="col-12 border-top pt-2 mt-2">
+                                <strong>Stats: </strong> <span x-text="selectedItem?.number_of_tithers"></span> Tithers,
+                                <span x-text="selectedItem?.number_of_new_tithers"></span> New
+                            </div>
+                        </div>
+
+                        <!-- Pastor/Remittance Details (Month Grid) -->
+                        <div x-show="activeTab === 'pastor' || activeTab === 'remittance'">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">Monthly Breakdown</h6>
+                            <div class="row g-2">
+                                <div class="col-3 mb-2"><small class="d-block text-muted">Jan</small><strong
+                                        x-text="formatCurrency(selectedItem?.jan_tithe || selectedItem?.jan_amount)"></strong>
+                                </div>
+                                <div class="col-3 mb-2"><small class="d-block text-muted">Feb</small><strong
+                                        x-text="formatCurrency(selectedItem?.feb_tithe || selectedItem?.feb_amount)"></strong>
+                                </div>
+                                <div class="col-3 mb-2"><small class="d-block text-muted">Mar</small><strong
+                                        x-text="formatCurrency(selectedItem?.mar_tithe || selectedItem?.mar_amount)"></strong>
+                                </div>
+                                <div class="col-3 mb-2"><small class="d-block text-muted">Apr</small><strong
+                                        x-text="formatCurrency(selectedItem?.apr_tithe || selectedItem?.apr_amount)"></strong>
+                                </div>
+                                <div class="col-3 mb-2"><small class="d-block text-muted">May</small><strong
+                                        x-text="formatCurrency(selectedItem?.may_tithe || selectedItem?.may_amount)"></strong>
+                                </div>
+                                <div class="col-3 mb-2"><small class="d-block text-muted">Jun</small><strong
+                                        x-text="formatCurrency(selectedItem?.jun_tithe || selectedItem?.jun_amount)"></strong>
+                                </div>
+                                <div class="col-3 mb-2"><small class="d-block text-muted">Jul</small><strong
+                                        x-text="formatCurrency(selectedItem?.jul_tithe || selectedItem?.jul_amount)"></strong>
+                                </div>
+                                <div class="col-3 mb-2"><small class="d-block text-muted">Aug</small><strong
+                                        x-text="formatCurrency(selectedItem?.aug_tithe || selectedItem?.aug_amount)"></strong>
+                                </div>
+                                <div class="col-3 mb-2"><small class="d-block text-muted">Sep</small><strong
+                                        x-text="formatCurrency(selectedItem?.sep_tithe || selectedItem?.sep_amount)"></strong>
+                                </div>
+                                <div class="col-3 mb-2"><small class="d-block text-muted">Oct</small><strong
+                                        x-text="formatCurrency(selectedItem?.oct_tithe || selectedItem?.oct_amount)"></strong>
+                                </div>
+                                <div class="col-3 mb-2"><small class="d-block text-muted">Nov</small><strong
+                                        x-text="formatCurrency(selectedItem?.nov_tithe || selectedItem?.nov_amount)"></strong>
+                                </div>
+                                <div class="col-3 mb-2"><small class="d-block text-muted">Dec</small><strong
+                                        x-text="formatCurrency(selectedItem?.dec_tithe || selectedItem?.dec_amount)"></strong>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">Close</button></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Modal -->
+        <div class="modal fade" id="statusModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" x-text="modalTitle"></h5><button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p x-text="modalBody"></p>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-primary"
+                            data-bs-dismiss="modal">OK</button></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="/js/finance.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+</body>
+
+</html>
