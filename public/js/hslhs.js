@@ -113,7 +113,9 @@ document.addEventListener('alpine:init', () => {
                 this.showModal("Success", "Report Submitted Successfully");
                 this.loadReports();
             } catch (err) {
-                this.showModal("Error", "Failed to submit report. Please check inputs.");
+                // --- NEW ERROR LOGIC ---
+                const message = err.response?.data?.error || 'Failed to submit report.';
+                this.showModal("Error", message); // Pass the specific message to the modal
                 console.error(err);
             }
         },

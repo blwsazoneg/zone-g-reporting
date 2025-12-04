@@ -186,7 +186,11 @@ document.addEventListener('alpine:init', () => {
                 }
                 this.reportModalInstance.hide();
                 this.loadReportsForEvent();
-            } catch (err) { alert("Failed to save report."); }
+            } catch (err) {
+                // --- NEW ERROR LOGIC ---
+                const message = err.response?.data?.error || 'Failed to save report.';
+                alert(message);
+            }
         },
 
         formatDate(dateStr) {

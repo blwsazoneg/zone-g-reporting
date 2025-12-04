@@ -135,7 +135,9 @@ document.addEventListener('alpine:init', () => {
                 await this.fetchInitialData(); // Refresh data
                 // alert(this.isEditing ? "Chapter updated" : "Chapter created");
             } catch (error) {
-                alert('Failed to save chapter.');
+                // --- NEW ERROR LOGIC ---
+                const message = error.response?.data?.error || 'Failed to save chapter.';
+                alert(message); // Or use your modal: this.showModal("Error", message);
             }
         },
 
@@ -152,7 +154,9 @@ document.addEventListener('alpine:init', () => {
                 await deleteChapter(chapterId);
                 await this.fetchInitialData();
             } catch (error) {
-                alert('Failed to delete chapter.');
+                // --- NEW ERROR LOGIC ---
+                const message = error.response?.data?.error || 'Failed to delete chapter.';
+                alert(message);
             } finally {
                 this.confirmModalInstance.hide();
             }

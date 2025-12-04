@@ -81,12 +81,24 @@ document.addEventListener('alpine:init', () => {
                 await createGroup({ group_name: this.newGroupName });
                 this.modalInstance.hide();
                 await this.fetchGroups();
-            } catch (e) { alert("Error creating group"); }
+            } catch (err) {
+                // --- NEW ERROR LOGIC ---
+                // If the server sent a specific error message, use it. Otherwise, use a default.
+                const message = err.response?.data?.error || 'Failed to create group.';
+                alert(message);
+            }
         },
 
         async deleteGroup(id) {
-            if (!confirm("Delete this group?")) return;
-            try { await deleteGroup(id); await this.fetchGroups(); } catch (e) { alert("Error deleting"); }
+            if (!confirm("Are you sure you want to delete this group?")) return;
+            try {
+                await deleteGroup(id);
+                await this.fetchGroups();
+            } catch (err) {
+                // --- NEW ERROR LOGIC ---
+                const message = err.response?.data?.error || 'Failed to delete group.';
+                alert(message);
+            }
         }
     }));
 });

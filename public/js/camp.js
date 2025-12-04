@@ -133,7 +133,7 @@ document.addEventListener('alpine:init', () => {
                 this.eventModalInstance.hide();
                 this.loadInitialData();
                 alert("Camp Created");
-            } catch (err) { alert("Error creating camp"); }
+            } catch (err) { alert(err.response?.data?.error || "Error creating camp"); }
         },
 
         async confirmDeleteEvent(event) {
@@ -141,7 +141,7 @@ document.addEventListener('alpine:init', () => {
                 try {
                     await deleteCampEvent(event.id);
                     this.loadInitialData();
-                } catch (err) { alert("Failed to delete camp"); }
+                } catch (err) { alert(err.response?.data?.error || "Failed to delete camp"); }
             }
         },
 
@@ -158,7 +158,7 @@ document.addEventListener('alpine:init', () => {
                 alert("Attendance Submitted");
                 // Refresh view if admin
                 if (this.isAdmin) this.loadCampData();
-            } catch (err) { alert("Error submitting attendance"); }
+            } catch (err) { alert(err.response?.data?.error || "Error submitting attendance"); }
         },
 
         async submitSummaryForm() {
@@ -170,7 +170,7 @@ document.addEventListener('alpine:init', () => {
                     ...this.sumForm
                 });
                 alert("Summary Submitted");
-            } catch (err) { alert("Error submitting summary"); }
+            } catch (err) { alert(err.response?.data?.error || "Error submitting summary"); }
         },
 
         async submitUpload() {
@@ -186,7 +186,7 @@ document.addEventListener('alpine:init', () => {
                 await uploadAttendees(this.selectedCampId, formData);
                 alert("Upload Successful");
                 this.$refs.attendeeFile.value = '';
-            } catch (err) { alert("Upload Failed"); }
+            } catch (err) { alert(err.response?.data?.error || "Upload Failed"); }
         },
 
         formatDate(d) { return new Date(d).toLocaleDateString(); }

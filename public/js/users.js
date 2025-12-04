@@ -162,7 +162,9 @@ document.addEventListener('alpine:init', () => {
                 this.formModalInstance.hide();
                 this.fetchInitialData(); // Refresh list
             } catch (error) {
-                alert('Failed to save user. KC Username might already exist.');
+                // --- NEW ERROR LOGIC ---
+                const message = error.response?.data?.error || 'Failed to save user.';
+                alert(message);
             }
         },
 
@@ -179,7 +181,9 @@ document.addEventListener('alpine:init', () => {
                 await deleteUser(userId);
                 await this.fetchInitialData();
             } catch (error) {
-                alert('Failed to delete user.');
+                // --- NEW ERROR LOGIC ---
+                const message = error.response?.data?.error || 'Failed to delete user.';
+                alert(message);
             } finally {
                 this.confirmModalInstance.hide();
             }
