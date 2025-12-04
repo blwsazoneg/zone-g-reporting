@@ -24,9 +24,10 @@
   },
   "contributors": [],
   "scripts": {
-    "dev": "node index.js",
+    "start": "node index.js",
     "test": "nodemon index.js",
-    "bundle-kc": "browserify node_modules/kingschat-web-sdk/dist/index.js -s kingsChatWebSdk > public/js/kc-sdk-bundle.js"
+    "bundle-kc": "browserify node_modules/kingschat-web-sdk/dist/index.js -s kingsChatWebSdk > public/js/kc-sdk-bundle.js",
+    "build": "npm run bundle-kc"
   },
   "dependencies": {
     "axios": "^1.13.2",
